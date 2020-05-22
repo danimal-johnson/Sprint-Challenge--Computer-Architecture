@@ -19,6 +19,10 @@ PUSH = 0b01000101  # 0x45
 POP = 0b01000110  # 0x46
 CALL = 0b01010000  # 0x50
 RET = 0b00010001  # 0x11
+CMP = 0b10100111  # 0xA7
+JMP = 0b01010100  # 0x54
+JEQ = 0b01010101  # 0x55
+JNE = 0b01010110  # 0x56
 
 
 class CPU:
@@ -68,8 +72,19 @@ class CPU:
             self.reg[reg_a] -= self.reg[reg_b]
         elif op == "MUL":
             self.reg[reg_a] *= self.reg[reg_b]
-        elif op == "div":
+        elif op == "DIV":
             self.reg[reg_a] /= self.reg[reg_b]
+        elif op == "CMP":
+            a = self.reg[reg_a]
+            b = self.reg[reg_b]
+            # TODO: Consider masking if bits are used for other ops
+            # print("Comparing", a, "to", b)
+            if a < b:
+                self.FL = 0b00000100
+            elif a > b:
+                self.FL = 0b00000010
+            else:  # a == b
+                self.FL = 0b00000001
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -129,6 +144,10 @@ class CPU:
                 self.alu("DIV", op1, op2)
                 self.PC += 3
 
+            elif ir == CMP:
+                self.alu("CMP", op1, op2)
+                self.PC += 3
+
             elif ir == PUSH:
                 # TODO: Check for overflow
                 self.reg[SP] -= 1
@@ -155,6 +174,21 @@ class CPU:
                 # Store it in the PC
                 self.PC = self.ram[self.reg[SP]]
                 self.reg[SP] += 1
+
+            elif ir == JMP:
+                self.PC = self.reg[op1]
+
+            elif ir == JEQ:
+                if self.FL & 0b00000001 == True:
+                    self.PC = self.reg[op1]
+                else:
+                    self.PC += 2
+
+            elif ir == JNE:
+                if self.FL & 0b00000001 == False:
+                    self.PC = self.reg[op1]
+                else:
+                    self.PC += 2
 
             else:
                 print("Instruction ", ir, "not implemented. Halting.")
