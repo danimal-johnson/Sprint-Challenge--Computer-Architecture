@@ -15,6 +15,7 @@ ADD = 0b10100000  # 0xA0
 SUB = 0b10100001  # 0xA1
 MUL = 0b10100010  # 0xA2
 DIV = 0b10100011  # 0xA3
+MOD = 0b10100100  # 0xA4
 PUSH = 0b01000101  # 0x45
 POP = 0b01000110  # 0x46
 CALL = 0b01010000  # 0x50
@@ -23,6 +24,12 @@ CMP = 0b10100111  # 0xA7
 JMP = 0b01010100  # 0x54
 JEQ = 0b01010101  # 0x55
 JNE = 0b01010110  # 0x56
+AND = 0b10101000  # 0xA8
+NOT = 0b01101001  # 0x69
+OR = 0b10101010  # 0xAA
+XOR = 0b10101011  # 0xAB
+SHL = 0b10101100  # 0xAC
+SHR = 0b10101101  # 0xAD
 
 
 class CPU:
@@ -74,6 +81,8 @@ class CPU:
             self.reg[reg_a] *= self.reg[reg_b]
         elif op == "DIV":
             self.reg[reg_a] /= self.reg[reg_b]
+        elif op == "MOD":
+            self.reg[reg_a] %= self.reg[reg_b]
         elif op == "CMP":
             a = self.reg[reg_a]
             b = self.reg[reg_b]
@@ -85,6 +94,20 @@ class CPU:
                 self.FL = 0b00000010
             else:  # a == b
                 self.FL = 0b00000001
+
+        elif op == "AND":
+            self.reg[reg_a] &= self.reg[reg_b]
+        elif op == "NOT":
+            self.reg[reg_a] = ~self.reg[reg_a]
+        elif op == "OR":
+            self.reg[reg_a] |= self.reg[reg_b]
+        elif op == "XOR":
+            self.reg[reg_a] ^= self.reg[reg_b]
+        elif op == "SHL":
+            self.reg[reg_a] <<= self.reg[reg_b]
+        elif op == "SHR":
+            self.reg[reg_a] >>= self.reg[reg_b]
+
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -131,21 +154,38 @@ class CPU:
             elif ir == ADD:
                 self.alu("ADD", op1, op2)
                 self.PC += 3
-
             elif ir == SUB:
                 self.alu("SUB", op1, op2)
                 self.PC += 3
-
             elif ir == MUL:
                 self.alu("MUL", op1, op2)
                 self.PC += 3
-
             elif ir == DIV:
                 self.alu("DIV", op1, op2)
                 self.PC += 3
-
+            elif ir == MOD:
+                self.alu("MOD", op1, op2)
+                self.PC += 3
             elif ir == CMP:
                 self.alu("CMP", op1, op2)
+                self.PC += 3
+            elif ir == AND:
+                self.alu("AND", op1, op2)
+                self.PC += 3
+            elif ir == NOT:
+                self.alu("NOT", op1)
+                self.PC += 2
+            elif ir == OR:
+                self.alu("OR", op1, op2)
+                self.PC += 3
+            elif ir == XOR:
+                self.alu("XOR", op1, op2)
+                self.PC += 3
+            elif ir == SHL:
+                self.alu("SHL", op1, op2)
+                self.PC += 3
+            elif ir == SHR:
+                self.alu("SHR", op1, op2)
                 self.PC += 3
 
             elif ir == PUSH:
